@@ -34,7 +34,10 @@ if options:
         st.image('animation_streamlit.gif', width=400)
         
         st.info('This is the output of the machine learning model as tokens')
-        
+        model = load_model()
+        yhat = model.predict(tf.expand_dims(video, axis=0))
+        decoder = tf.keras.backend.ctc_decode(yhat, [75], greedy=True)[0][0]
+        st.text(decoder)
         
         st.info('Decode the raw tokens into words')
         
