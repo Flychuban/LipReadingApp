@@ -43,4 +43,6 @@ if options:
         tranlated_text = num_to_char(decoder)
         tranlated_text = tf.strings.reduce_join(tranlated_text).numpy().decode('utf-8')
         st.text(tranlated_text)
-        
+    
+    # For future improvements detect not only mpg but dynamic
+    # Dynamic detection of lips
