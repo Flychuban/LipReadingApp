@@ -10,7 +10,7 @@ from keras import backend as K
 face = None
 mouth = None
 face_predictor_path = r"C:\Users\sas\Desktop\LipReadingApp\shape_predictor_68_face_landmarks.dat"
-# frames_path = r"C:\Users\sas\Desktop\LipReadingApp\data\s1\bbaf2n.mpg"
+
 
 def get_frames_mouth(detector, predictor, frames):
     MOUTH_WIDTH = 100
@@ -63,13 +63,13 @@ def get_frames_mouth(detector, predictor, frames):
 
 
 def process_frames_face(frames, face_predictor_path):
-
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(face_predictor_path)
     mouth_frames = get_frames_mouth(detector, predictor, frames)
     face = np.array(frames)
     mouth = np.array(mouth_frames)
     set_data(mouth_frames)
+    return mouth_frames
     
 def set_data(frames):
     data_frames = []
@@ -83,9 +83,7 @@ def set_data(frames):
     if K.image_data_format() == 'channels_first':
         data_frames = np.rollaxis(data_frames, 3) # C x T x W x H
     data = data_frames
-    print(f"Data: {data}")
     length = frames_n
-    print(length)
     return data
 
 
@@ -99,14 +97,22 @@ num_to_char = tf.keras.layers.StringLookup(
 def load_video(path:str) -> List[float]: 
     videogen = skvideo.io.vreader(path)
     frames = np.array([frame for frame in videogen])
-    frames_lips = process_frames_face(frames, face_predictor_path)
+    frames_lips = np.array(process_frames_face(frames, face_predictor_path))
+    
+    # cap = cv2.VideoCapture(path)
+    # frames = []
     # for _ in range(int(cap.get(cv2.CAP_PROP_FRAME_COUNT))): 
     #     ret, frame = cap.read()
     #     frame = tf.image.rgb_to_grayscale(frame)
     #     frames.append(frame[190:236,80:220,:])
     # cap.release()
-    
+    # for frame in frames_lips:
+    #     frame = tf.image.rgb_to_grayscale(frame)
+
+    print(f"Frames shape:{frames_lips.shape}")
+    print(f"Frames: {frames_lips}")
     mean = tf.math.reduce_mean(frames_lips)
+    print(mean)
     std = tf.math.reduce_std(tf.cast(frames_lips, tf.float32))
     return tf.cast((frames_lips - mean), tf.float32) / std
     
