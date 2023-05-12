@@ -4,12 +4,14 @@ import cv2
 import os 
 import numpy as np
 import dlib
+import skvideo.io
 
 face = None
 mouth = None
-face_predictor_path = os.path.join('..','data','shape_predictor_68_face_landmarks.dat')
+face_predictor_path = r"C:\Users\sas\Desktop\LipReadingApp\shape_predictor_68_face_landmarks.dat"
+frames_path = r"C:\Users\sas\Desktop\LipReadingApp\data\s1\bbaf2n.mpg"
 
-def get_frames_mouth(self, detector, predictor, frames):
+def get_frames_mouth(detector, predictor, frames):
     MOUTH_WIDTH = 100
     MOUTH_HEIGHT = 50
     HORIZONTAL_PAD = 0.19
@@ -40,7 +42,7 @@ def get_frames_mouth(self, detector, predictor, frames):
             normalize_ratio = MOUTH_WIDTH / float(mouth_right - mouth_left)
 
         new_img_shape = (int(frame.shape[0] * normalize_ratio), int(frame.shape[1] * normalize_ratio))
-        resized_img = imresize(frame, new_img_shape)
+        resized_img = cv2.resize(frame, new_img_shape)
 
         mouth_centroid_norm = mouth_centroid * normalize_ratio
 
@@ -48,14 +50,20 @@ def get_frames_mouth(self, detector, predictor, frames):
         mouth_r = int(mouth_centroid_norm[0] + MOUTH_WIDTH / 2)
         mouth_t = int(mouth_centroid_norm[1] - MOUTH_HEIGHT / 2)
         mouth_b = int(mouth_centroid_norm[1] + MOUTH_HEIGHT / 2)
-
+        print(f"Mouth left: {mouth_l}")
+        print(f"Mouth right: {mouth_r}")
+        print(f"Mouth top: {mouth_t}")
+        print(f"Mouth bottom: {mouth_b}")
+        
         mouth_crop_image = resized_img[mouth_t:mouth_b, mouth_l:mouth_r]
+        print(f"Mouth crop image: {mouth_crop_image}")
 
         mouth_frames.append(mouth_crop_image)
+        print(f"Mouth frames: {mouth_frames}")
     return mouth_frames
 
 
-def process_frames_face(self, frames, face_predictor_path):
+def process_frames_face(frames, face_predictor_path):
 
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(face_predictor_path)
@@ -108,3 +116,9 @@ def load_data(path: str):
     alignments = load_alignments(alignment_path)
     
     return frames, alignments
+
+
+if __name__ == '__main__':
+    videogen = skvideo.io.vreader(frames_path)
+    frames = np.array([frame for frame in videogen])
+    process_frames_face(frames, face_predictor_path)
