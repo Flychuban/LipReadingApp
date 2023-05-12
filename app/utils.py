@@ -5,11 +5,12 @@ import os
 import numpy as np
 import dlib
 import skvideo.io
+from keras import backend as K
 
 face = None
 mouth = None
 face_predictor_path = r"C:\Users\sas\Desktop\LipReadingApp\shape_predictor_68_face_landmarks.dat"
-frames_path = r"C:\Users\sas\Desktop\LipReadingApp\data\s1\bbaf2n.mpg"
+# frames_path = r"C:\Users\sas\Desktop\LipReadingApp\data\s1\bbaf2n.mpg"
 
 def get_frames_mouth(detector, predictor, frames):
     MOUTH_WIDTH = 100
@@ -50,16 +51,14 @@ def get_frames_mouth(detector, predictor, frames):
         mouth_r = int(mouth_centroid_norm[0] + MOUTH_WIDTH / 2)
         mouth_t = int(mouth_centroid_norm[1] - MOUTH_HEIGHT / 2)
         mouth_b = int(mouth_centroid_norm[1] + MOUTH_HEIGHT / 2)
-        print(f"Mouth left: {mouth_l}")
-        print(f"Mouth right: {mouth_r}")
-        print(f"Mouth top: {mouth_t}")
-        print(f"Mouth bottom: {mouth_b}")
+        # print(f"Mouth left: {mouth_l}")
+        # print(f"Mouth right: {mouth_r}")
+        # print(f"Mouth top: {mouth_t}")
+        # print(f"Mouth bottom: {mouth_b}")
         
         mouth_crop_image = resized_img[mouth_t:mouth_b, mouth_l:mouth_r]
-        print(f"Mouth crop image: {mouth_crop_image}")
 
         mouth_frames.append(mouth_crop_image)
-        print(f"Mouth frames: {mouth_frames}")
     return mouth_frames
 
 
@@ -70,7 +69,24 @@ def process_frames_face(frames, face_predictor_path):
     mouth_frames = get_frames_mouth(detector, predictor, frames)
     face = np.array(frames)
     mouth = np.array(mouth_frames)
-    # self.set_data(mouth_frames)
+    set_data(mouth_frames)
+    
+def set_data(frames):
+    data_frames = []
+    for frame in frames:
+        frame = frame.swapaxes(0,1) # swap width and height to form format W x H x C
+        if len(frame.shape) < 3:
+            frame = np.array([frame]).swapaxes(0,2).swapaxes(0,1) # Add grayscale channel
+        data_frames.append(frame)
+    frames_n = len(data_frames)
+    data_frames = np.array(data_frames) # T x W x H x C
+    if K.image_data_format() == 'channels_first':
+        data_frames = np.rollaxis(data_frames, 3) # C x T x W x H
+    data = data_frames
+    print(f"Data: {data}")
+    length = frames_n
+    print(length)
+    return data
 
 
 vocab = [x for x in "abcdefghijklmnopqrstuvwxyz'?!123456789 "]
@@ -81,18 +97,18 @@ num_to_char = tf.keras.layers.StringLookup(
 )
 
 def load_video(path:str) -> List[float]: 
-    #print(path)
-    cap = cv2.VideoCapture(path)
-    frames = []
-    for _ in range(int(cap.get(cv2.CAP_PROP_FRAME_COUNT))): 
-        ret, frame = cap.read()
-        frame = tf.image.rgb_to_grayscale(frame)
-        frames.append(frame[190:236,80:220,:])
-    cap.release()
+    videogen = skvideo.io.vreader(path)
+    frames = np.array([frame for frame in videogen])
+    frames_lips = process_frames_face(frames, face_predictor_path)
+    # for _ in range(int(cap.get(cv2.CAP_PROP_FRAME_COUNT))): 
+    #     ret, frame = cap.read()
+    #     frame = tf.image.rgb_to_grayscale(frame)
+    #     frames.append(frame[190:236,80:220,:])
+    # cap.release()
     
-    mean = tf.math.reduce_mean(frames)
-    std = tf.math.reduce_std(tf.cast(frames, tf.float32))
-    return tf.cast((frames - mean), tf.float32) / std
+    mean = tf.math.reduce_mean(frames_lips)
+    std = tf.math.reduce_std(tf.cast(frames_lips, tf.float32))
+    return tf.cast((frames_lips - mean), tf.float32) / std
     
 def load_alignments(path:str) -> List[str]: 
     #print(path)
@@ -118,7 +134,5 @@ def load_data(path: str):
     return frames, alignments
 
 
-if __name__ == '__main__':
-    videogen = skvideo.io.vreader(frames_path)
-    frames = np.array([frame for frame in videogen])
-    process_frames_face(frames, face_predictor_path)
+# if __name__ == '__main__':
+#     load_data(frames_path)
