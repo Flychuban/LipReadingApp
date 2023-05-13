@@ -109,8 +109,8 @@ def load_video(path:str) -> List[float]:
     # for frame in frames_lips:
     #     frame = tf.image.rgb_to_grayscale(frame)
 
-    print(f"Frames shape:{frames_lips.shape}")
-    print(f"Frames: {frames_lips}")
+    # print(f"Frames shape:{frames_lips.shape}")
+    # print(f"Frames: {frames_lips}")
     mean = tf.math.reduce_mean(frames_lips)
     print(mean)
     std = tf.math.reduce_std(tf.cast(frames_lips, tf.float32))
@@ -134,10 +134,13 @@ def load_data(path: str):
     file_name = path.split('\\')[-1].split('.')[0]
     video_path = os.path.join('..','data','s1',f'{file_name}.mpg')
     alignment_path = os.path.join('..','data','alignments','s1',f'{file_name}.align')
-    frames = load_video(video_path) 
+    frames = load_video(video_path)
+    print(f"Frames: {frames}")
+    frames_shape = frames.shape
+    print(f"Frames shape: {frames_shape}")
     alignments = load_alignments(alignment_path)
     
-    return frames, alignments
+    return frames, alignments, frames_shape
 
 
 # if __name__ == '__main__':

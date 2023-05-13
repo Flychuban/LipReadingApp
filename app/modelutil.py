@@ -4,10 +4,10 @@ from tensorflow.keras.layers import Conv3D, LSTM, Dense, Dropout, Bidirectional,
 
 
 # Model should be fined tune for dynamic frames of lips
-def load_model() -> Sequential: 
+def load_model(width, height) -> Sequential: 
     model = Sequential()
 
-    model.add(Conv3D(128, 3, input_shape=(75,50,100,1), padding='same'))
+    model.add(Conv3D(128, 3, input_shape=(75, width, height,1), padding='same'))
     model.add(Activation('relu'))
     model.add(MaxPool3D((1,2,2)))
 
