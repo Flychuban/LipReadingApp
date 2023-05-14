@@ -5,7 +5,7 @@ from keras import backend as K
 from scipy import ndimage
 import skvideo.io
 import dlib
-from aligns import Align
+from .aligns import Align
 
 class Video(object):
     def __init__(self, vtype='mouth', face_predictor_path=None):

@@ -4,7 +4,7 @@ from keras.layers.core import Dense, Activation, SpatialDropout3D, Flatten
 from keras.layers import Bidirectional, TimeDistributed, BatchNormalization, GRU
 from keras.layers import Input
 from keras.models import Model
-from ctc_implementation import CTC
+from .ctc_implementation import CTC
 from keras import backend as K
 
 

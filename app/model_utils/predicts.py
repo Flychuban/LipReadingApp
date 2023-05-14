@@ -1,9 +1,9 @@
-from video import Video
-from visualization import show_video_subtitle
-from decoder import Decoder
-from translations import labels_to_text
-from spell import Spell
-from model import LipNet
+from .implementation_video import Video
+from .visualization import show_video_subtitle
+from .decoder import Decoder
+from .translations import labels_to_text
+from .spell import Spell
+from .model import LipNet
 from keras.optimizers import Adam
 from keras import backend as K
 import numpy as np
@@ -15,11 +15,11 @@ np.random.seed(55)
 
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
-FACE_PREDICTOR_PATH = os.path.join(CURRENT_PATH,'..','shape_predictor_68_face_landmarks.dat')
+FACE_PREDICTOR_PATH = os.path.join(CURRENT_PATH,'shape_predictor_68_face_landmarks.dat')
 
 PREDICT_GREEDY      = False
 PREDICT_BEAM_WIDTH  = 200
-PREDICT_DICTIONARY  = os.path.join(CURRENT_PATH,'..','grid.txt')
+PREDICT_DICTIONARY  = os.path.join(CURRENT_PATH,'grid.txt')
 
 lipnet = None
 adam = None
@@ -33,10 +33,11 @@ def predict(weight_path, video):
     global decoder
 
     if lipnet is None:
+        print("Loading LipNet model in memory...")
         lipnet = LipNet(img_c=3, img_w=100, img_h=50, frames_n=75,
                         absolute_max_string_len=32, output_size=28)
 
-        adam = Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+        adam = Adam(learning_rate=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 
         lipnet.model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=adam)
         lipnet.model.load_weights(weight_path)
@@ -52,15 +53,11 @@ def predict(weight_path, video):
     result         = decoder.decode(y_pred, input_length)[0]
 
     show_video_subtitle(video.face, result)
-    print(result)
+    print(f"Result: {result}")
 
-def predicts(weight_path, videos_path, absolute_max_string_len=32, output_size=28):
-    videos = []
-    for video_path in glob.glob(os.path.join(videos_path, '*')):
-        videos.append(load(video_path))
-    input("Press Enter to continue...")
-    for video in videos:
-        predict(weight_path, video)
+def predicts(weight_path, video_path, absolute_max_string_len=32, output_size=28):
+    video = load(video_path)
+    predict(weight_path, video)
 
 def load(video_path):
     print(f"\n[{video_path}]\nLoading data from disk...")
@@ -71,13 +68,3 @@ def load(video_path):
         video.from_frames(video_path)
     print("Data loaded")
     return video
-
-if __name__ == '__main__':
-    if len(sys.argv) == 3:
-        predicts(sys.argv[1], sys.argv[2])
-    elif len(sys.argv) == 4:
-        predicts(sys.argv[1], sys.argv[2], sys.argv[3])
-    elif len(sys.argv) == 5:
-        predicts(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-    else:
-        pass

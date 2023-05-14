@@ -9,7 +9,7 @@ from keras import backend as K
 
 face = None
 mouth = None
-face_predictor_path = r"C:\Users\sas\Desktop\LipReadingApp\shape_predictor_68_face_landmarks.dat"
+face_predictor_path = r"C:\Users\sas\Desktop\LipReadingApp\app\model_utils\shape_predictor_68_face_landmarks.dat"
 
 
 def get_frames_mouth(detector, predictor, frames):
