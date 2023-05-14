@@ -5,6 +5,7 @@ import tensorflow as tf
 
 from utils import load_data, num_to_char
 from modelutil import load_model
+from newmodelutil import LipNet
 
 st.set_page_config(layout="wide")
 
@@ -30,13 +31,16 @@ if options:
     with col2:
         st.info('This is all the machine learning model sees when making a prediction')
         video, annotations, frames_shape = load_data(tf.convert_to_tensor(file_path))
+        frames_n = frames_shape[0]
         width = frames_shape[1]
         height = frames_shape[2]
+        video_channel = frames_shape[3]
         imageio.mimsave('animation_streamlit.gif', video, fps=10)
         st.image('animation_streamlit.gif', width=400)
         
         st.info('This is the output of the machine learning model as tokens')
-        model = load_model(width, height)
+        # model = load_model(width, height)
+        model = LipNet(frames_n, width, height, video_channel)
         yhat = model.predict(tf.expand_dims(video, axis=0))
         decoder = tf.keras.backend.ctc_decode(yhat, [75], greedy=True)[0][0]
         st.text(decoder)
