@@ -15,11 +15,11 @@ np.random.seed(55)
 
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 
-FACE_PREDICTOR_PATH = os.path.join(CURRENT_PATH,'..','common','predictors','shape_predictor_68_face_landmarks.dat')
+FACE_PREDICTOR_PATH = os.path.join(CURRENT_PATH,'..','shape_predictor_68_face_landmarks.dat')
 
 PREDICT_GREEDY      = False
 PREDICT_BEAM_WIDTH  = 200
-PREDICT_DICTIONARY  = os.path.join(CURRENT_PATH,'..','common','dictionaries','grid.txt')
+PREDICT_DICTIONARY  = os.path.join(CURRENT_PATH,'..','grid.txt')
 
 lipnet = None
 adam = None
@@ -52,24 +52,24 @@ def predict(weight_path, video):
     result         = decoder.decode(y_pred, input_length)[0]
 
     show_video_subtitle(video.face, result)
-    print result
+    print(result)
 
 def predicts(weight_path, videos_path, absolute_max_string_len=32, output_size=28):
     videos = []
     for video_path in glob.glob(os.path.join(videos_path, '*')):
         videos.append(load(video_path))
-    raw_input("Press Enter to continue...")
+    input("Press Enter to continue...")
     for video in videos:
         predict(weight_path, video)
 
 def load(video_path):
-    print "\n[{}]\nLoading data from disk...".format(video_path)
+    print(f"\n[{video_path}]\nLoading data from disk...")
     video = Video(vtype='face', face_predictor_path=FACE_PREDICTOR_PATH)
     if os.path.isfile(video_path):
         video.from_video(video_path)
     else:
         video.from_frames(video_path)
-    print "Data loaded.\n"
+    print("Data loaded")
     return video
 
 if __name__ == '__main__':
