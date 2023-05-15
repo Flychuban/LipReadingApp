@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import imageio
-import tensorflow as tf
+
 
 # from utils import load_data, num_to_char
 # from modelutil import load_model
@@ -12,6 +12,9 @@ from utils import load_video
 
 WEIGHTS_PATH = os.path.join('model_utils', 'lipnet_weights.h5')
 
+# tf.compat.v1.disable_v2_behavior() # model trained in tf1
+# lipnet.model = tf.compat.v1.keras.models.load_weights('./lipnet_weights.h5')
+# model = tf.compat.v1.keras.models.load_model('lipnet_weights.h5')
 
 st.set_page_config(layout="wide")
 
@@ -51,7 +54,7 @@ if options:
         # decoder = tf.keras.backend.ctc_decode(yhat, [75], greedy=True)[0][0]
         # st.text(decoder)
         print('Predicting...')
-        predicts(WEIGHTS_PATH, video_path)
+        predict(WEIGHTS_PATH, video_path)
         
         # st.info('Decode the raw tokens into words')
         # tranlated_text = num_to_char(decoder)

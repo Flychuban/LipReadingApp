@@ -17,7 +17,7 @@ class LipNet(object):
         self.absolute_max_string_len = absolute_max_string_len
         self.output_size = output_size
         self.build()
-
+    
     def build(self):
         if K.image_data_format() == 'channels_first':
             input_shape = (self.img_c, self.frames_n, self.img_w, self.img_h)
@@ -49,8 +49,8 @@ class LipNet(object):
 
         self.resh1 = TimeDistributed(Flatten())(self.maxp3)
 
-        self.gru_1 = Bidirectional(GRU(256, return_sequences=True, kernel_initializer='Orthogonal', name='gru1'), merge_mode='concat')(self.resh1)
-        self.gru_2 = Bidirectional(GRU(256, return_sequences=True, kernel_initializer='Orthogonal', name='gru2'), merge_mode='concat')(self.gru_1)
+        self.gru_1 = Bidirectional(GRU(256, reset_after=False, return_sequences=True, kernel_initializer='Orthogonal', name='gru1'), merge_mode='concat')(self.resh1)
+        self.gru_2 = Bidirectional(GRU(256, reset_after=False, return_sequences=True, kernel_initializer='Orthogonal', name='gru2'), merge_mode='concat')(self.gru_1)
 
         # transforms RNN output to character activations:
         self.dense1 = Dense(self.output_size, kernel_initializer='he_normal', name='dense1')(self.gru_2)
